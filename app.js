@@ -15,12 +15,19 @@ app.use(bodyParser.json());
 
 // MySql
 const connection = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: '',
+    database: 'nodebackend_mysql'
+});
+/*
+const connection = mysql.createConnection({
     host: '34.122.225.150',
     user: 'root',
     password: 'jesus2020',
     database: 'nodebackend_mysql'
 });
-
+*/
 // Extended: https://swagger.io/specification/#infoObject
 const swaggerOptions = {
     swaggerDefinition: {
@@ -58,13 +65,13 @@ const swaggerOptions = {
      *        description: A successful response
      */
     app.get('/listclientes', (req, res) => {
-        const sql = 'SELECT * FROM clients';  
+        const sql = 'select idclient, client_nom, client_ape, client_age, DATE_FORMAT(client_fec_nac,"%Y-%m-%d") as client_fec_nac, DATE_FORMAT(client_fec_muerte,"%Y-%m-%d") as client_fec_muerte from clients';  
         connection.query(sql, (error, results) => {
         if (error) throw error;
         if (results.length > 0) {
             res.json(results);
         } else {
-            res.send('Not result');
+            res.status(404).send('No hay resultados');
         }
         });
     });
@@ -87,15 +94,41 @@ const swaggerOptions = {
      */
     app.get('/cliente/:id', (req, res) => {
         const { id } = req.params;
-        const sql = `SELECT * FROM clients WHERE idclient = ${id}`;
+        const sql = `select idclient, client_nom, client_ape, client_age, DATE_FORMAT(client_fec_nac,"%Y-%m-%d") as client_fec_nac, DATE_FORMAT(client_fec_muerte,"%Y-%m-%d") as client_fec_muerte from clients WHERE idclient = ${id}`;  
         connection.query(sql, (error, result) => {
         if (error) throw error;
     
         if (result.length > 0) {
             res.json(result);
         } else {
-            res.send('Not result');
+            res.send('No hay resultados');
         }
+        });
+    });
+    // Routes
+    /**
+     * @swagger
+     * /cliente/{id}:
+     *  delete:
+     *    tags:
+     *      - Cliente
+     *    description: Eliminar cliente por id
+     *    parameters:
+     *      - name: id
+     *        type: number
+     *        in: path
+     *        required: true
+     *    responses:
+     *      '200':
+     *        description: A successful response
+     */
+     app.delete('/cliente/:id', (req, res) => {
+        const { id } = req.params;
+        const sql = `delete from clients WHERE idclient = ${id}`;  
+        connection.query(sql, (error, result) => {
+        if (error) throw error;
+        res.header ("Access-Control-Allow-Origin", "*");
+        res.status(200).send('cliente eliminado!');
         });
     });
     // Routes
@@ -119,7 +152,7 @@ const swaggerOptions = {
         if (result.length > 0) {
             res.json(result[0]);
         } else {
-            res.send('Not result');
+            res.send('No hay resultados');
         }
         });
     });
@@ -185,4 +218,4 @@ const swaggerOptions = {
         console.log('Database server running!');
     });
   
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Servidor corriendo en el puerto ${PORT}`));
