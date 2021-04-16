@@ -1,0 +1,52 @@
+--Creación de tabla
+create database nodebackend_mysql;
+use nodebackend_mysql;
+select * from clients;
+CREATE TABLE `clients` (
+  `idclient` int(11) NOT NULL AUTO_INCREMENT,
+  `client_nom` varchar(45) NOT NULL,
+  `client_ape` varchar(45) NOT NULL,
+  `client_age` int(11) DEFAULT NULL,
+  `client_fec_nac` date DEFAULT NULL,
+  `client_fec_muerte` date DEFAULT NULL,
+  PRIMARY KEY (`idclient`)
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=latin1;
+
+--SP KPI
+DELIMITER $$
+USE `nodebackend_mysql`$$
+CREATE PROCEDURE `kpiclientes`()
+BEGIN
+SELECT count(*) INTO @cantidad FROM clients;
+SELECT AVG(client_age) INTO @promedio FROM clients;
+SELECT FORMAT(STD(orderCount),2)
+INTO @desviacion
+FROM (SELECT client_age, count(*) orderCount
+FROM clients
+GROUP BY client_age) t;
+SELECT IFNULL(@cantidad ,0) as cantidad, IFNULL(@promedio, 0) as promedio, IFNULL(@desviacion, 0) as desviacion;
+END$$
+DELIMITER ;
+;
+
+--SPI Crear cliente
+DELIMITER $$
+USE `nodebackend_mysql`$$
+CREATE PROCEDURE `crear_cliente`(
+  IN p_nombre varchar(45),
+  IN p_apellido varchar(45),
+  IN p_edad int,
+  IN p_fec_nac date
+)
+BEGIN
+  if p_edad = 0 or p_edad is null then
+	SELECT TIMESTAMPDIFF(YEAR,p_fec_nac,CURDATE()) INTO @edad;
+  else
+    SELECT p_edad INTO @edad;
+  end IF;  
+  SELECT DATE_ADD(p_fec_nac,INTERVAL 27929 DAY) INTO @muerte;
+  INSERT INTO clients(client_nom,client_ape,client_age,client_fec_nac,client_fec_muerte) 
+  VALUES(p_nombre, p_apellido,@edad,p_fec_nac,@muerte);  
+  END$$
+DELIMITER ;
+;
