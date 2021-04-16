@@ -15,10 +15,10 @@ app.use(bodyParser.json());
 
 // MySql
 const connection = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: '',
-  database: 'nodebackend_mysql'
+    host: '34.122.225.150',
+    user: 'root',
+    password: 'jesus2020',
+    database: 'nodebackend_mysql'
 });
 
 // Extended: https://swagger.io/specification/#infoObject
